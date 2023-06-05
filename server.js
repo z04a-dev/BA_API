@@ -73,8 +73,6 @@ app.post('/api', (req, res) => {
 			//console.log(driverResult)
 			res.json({'info': driverResult})
 		})
-    } else {
-    	res.json({'wrong': 'wrong'})
     }
 })
  
