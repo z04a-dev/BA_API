@@ -1,0 +1,47 @@
+input {
+width: 60%;
+height: 80px;
+color: #5c5c5c;
+border: 1px solid #dcdce6;
+border-radius: 8px;
+padding: 0 24px;
+margin-right: 10px;
+font-size: 24px;
+transition: 0.25s;
+text-align: center;
+}
+
+button {
+    min-height: 80px;
+    width: 100px;
+}
+#tb {
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-top: 2%;
+    min-width: 100vb;
+    max-width: 100%;
+    justify-content: center;
+}
+li {
+    display: grid;
+    grid-template-columns: 80% 20%;
+    list-style-type: none;
+    text-align: center;
+    outline: solid;
+    margin-bottom: 5px;
+    transition: 0.5s;
+  
+}
+li button {
+    width: 100%;
+}
+li:hover {
+    background-color: red;
+}
+h1 {
+    height: 50px;
+    font-size: 32px;
+}
+
+
