@@ -9,3 +9,8 @@ if os.path.exists("resultzip/" + args.library + "_library.zip"):
   os.remove("resultzip/" + args.library + "_library.zip")
 else:
     print("ERR: failed to delete zip file")
+    
+if os.path.exists("res/" + args.library + ".zip"):
+  os.remove("res/" + args.library + ".zip")
+else:
+    print("ERR: failed to delete zip file")
