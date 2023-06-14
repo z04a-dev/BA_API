@@ -9,14 +9,19 @@
 	<title>Document</title>
 </head>
 <body>
-	<div style="display: flex; justify-content: center;">
-		<input id="label" type="text" placeholder="Название библиотеки" style="margin-bottom: 5%; ">	
+	<div class="header">
+		<img src="img/ic_launcher.webp">
+		<button onclick="window.location.href= 'http://' + window.location.host;">Добавление</button>
+		<button onclick="window.location.href= 'http://' + window.location.host + '/list';">Список</button>
 	</div>
-	
-	<div>
+	<div style="display: flex; justify-content: center; margin-top: 20px;">
+		<input id="label" type="text" placeholder="Название библиотеки" style="margin-bottom: 5%; ">
+		<button class="btns" id="btngen">Generate</button>	
+	</div>
+	<div style="display: flex; justify-content: center;">
 		<input id="inp" type="text" placeholder="Название аудитории">	
-		<button id="btnadd">Add</button>
-		<button id="btngen">Generate</button>
+		<button class="btns" id="btnadd">Add</button>
+		
 	</div>
 	<div id="tb">
 		<ul id="list">

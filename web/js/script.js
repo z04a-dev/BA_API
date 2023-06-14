@@ -1,10 +1,11 @@
-let btn = document.querySelectorAll('button')[0]
+let btn = document.querySelectorAll('button')[3]
 let list = document.querySelector('#list')
 let inp = document.querySelector('#inp')
-let gen = document.querySelectorAll('button')[1]
+let gen = document.querySelectorAll('button')[2]
 let nameLibrary = document.querySelector("#label")
 let waiting = false
 let arr = []
+
 
 function createli(val) {
     let li = document.createElement('li')
@@ -19,6 +20,7 @@ function createli(val) {
     })
     btn.innerHTML = "Удалить"
     btn.style = "font-size: 24px;"
+    btn.className = "btndelete"
     text.innerHTML = val
     li.appendChild(text)
     li.appendChild(btn)
@@ -42,93 +44,110 @@ function animWrong() {
       return b[char] || char;
     }).join("");
   }
+
+
+//   var ru = ['й','ц','у','к','е','н','г','ш','щ','з','х','ф','ы','в','а','п','р','о','л','д','ж','э','я','ч','с','м','и','т','ь','б','ю','ъ']
+
+//   upRU = ru.map(function(x){ return x.toUpperCase(); })
+
+  var ru = `/[йцукенгшщзхъфывапролджэячсмитьбюЙЦУКЕНГШЩХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮЁё]+/`
+  var en = `/[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM]+/`
 btn.addEventListener('click', (evt) => {
-    if(inp.value != '' && !arr.includes(inp.value) && !arr.includes(transliterate(inp.value)) && !arr.includes(untransliterate(inp.value))) {
+    if(inp.value != '' && !arr.includes(inp.value) && !/[A-Za-z]/.test(inp.value)) {
         arr.push(inp.value)
         list.appendChild(createli(inp.value))
         inp.value = ''
     } else {
         inp.style = "background-color: red;"
-    setTimeout(animWrong, 250);
+        setTimeout(animWrong, 250);
+        if (/[A-Za-z]/.test(inp.value)) alert("Использование латиницы в наименовании комнат запрещено.")
     }
 })
 gen.addEventListener('click', (evt) => {
-    gen.disabled = true
-    if(!waiting) {
-        waiting = true
-        fetch(document.URL + "api/occurence", {
-            method: "POST",
-            headers: {
-              "info": transliterate(nameLibrary.value).replace(/\s+/g, '')
-            }
-          })
-            .then((response) => response.text())
-            .then((responseText) => {
-                arr.forEach(element => {
-                    arr[arr.indexOf(element)] = untransliterate(element)
-                });
-                console.log(responseText);
-                if(responseText == 'ok') {
-                    if(nameLibrary != '' && arr.length > 0) {
-                        fetch(document.URL + "generator", {
-                            method: "POST",
-                            body: JSON.stringify(arr),
-                        headers: {
-                            "Content-type": "application/json; charset=UTF-8",
-                            "info": transliterate(nameLibrary.value).replace(/\s+/g, '')
-                        }
-                    })
-                    .then((response) => response.text())
-                    .then((responseText) => {
-                        if(responseText == "ok") {
-                            //alert("Библиотека добавлена")
-                            fetch(document.URL + "api/downloadfile", {
-                                method: "GET",
+    if(arr.length != 0 && nameLibrary.value != '') {
+        gen.disabled = true
+        if(!waiting) {
+            waiting = true
+            fetch(document.URL + "api/occurence", {
+                method: "POST",
+                headers: {
+                  "info": transliterate(nameLibrary.value).replace(/\s+/g, '')
+                }
+              })
+                .then((response) => response.text())
+                .then((responseText) => {
+                    arr.forEach(element => {
+                        arr[arr.indexOf(element)] = untransliterate(element)
+                    });
+                    console.log(responseText);
+                    if(responseText == 'ok') {
+                        if(nameLibrary != '' && arr.length > 0) {
+                            fetch(document.URL + "generator", {
+                                method: "POST",
+                                body: JSON.stringify(arr),
                             headers: {
                                 "Content-type": "application/json; charset=UTF-8",
                                 "info": transliterate(nameLibrary.value).replace(/\s+/g, '')
                             }
-                            }).then((response) => response.blob())
-                            .then((blob) => {
-                                const url = window.URL.createObjectURL(new Blob([blob]));
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.setAttribute('download', transliterate(nameLibrary.value).replace(/\s+/g, '') + `_library.zip`);
-                                 // 3. Append to html page
-                                 document.body.appendChild(link);
-                                 // 4. Force download
-                                 link.click();
-                                 // 5. Clean up and remove the link
-                                 link.parentNode.removeChild(link);
-                            })
-                            arr.forEach(element => {
-                                var index = arr.indexOf(element);
-                                if (index !== -1) {
-                                    arr.splice(index, 1);
+                        })
+                        .then((response) => response.text())
+                        .then((responseText) => {
+                            if(responseText == "ok") {
+                                //alert("Библиотека добавлена")
+                                fetch(document.URL + "api/downloadfile", {
+                                    method: "GET",
+                                headers: {
+                                    "Content-type": "application/json; charset=UTF-8",
+                                    "info": transliterate(nameLibrary.value).replace(/\s+/g, '')
                                 }
-                            });
-                            gen.disabled = false
-                            list.replaceChildren()
-                        } else {
-                            alert("Произошла ошибка")
-                            arr.forEach(element => {
-                                var index = arr.indexOf(element);
-                                if (index !== -1) {
-                                    arr.splice(index, 1);
-                                }
-                            });
-                            gen.disabled = false
-                            list.replaceChildren()
+                                }).then((response) => response.blob())
+                                .then((blob) => {
+                                    const url = window.URL.createObjectURL(new Blob([blob]));
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.setAttribute('download', transliterate(nameLibrary.value).replace(/\s+/g, '') + `_library.zip`);
+                                     // 3. Append to html page
+                                     document.body.appendChild(link);
+                                     // 4. Force download
+                                     link.click();
+                                     // 5. Clean up and remove the link
+                                     link.parentNode.removeChild(link);
+                                })
+                                arr.forEach(element => {
+                                    var index = arr.indexOf(element);
+                                    if (index !== -1) {
+                                        arr.splice(index, 1);
+                                    }
+                                });
+                                gen.disabled = false
+                                list.replaceChildren()
+                            } else {
+                                alert("Произошла ошибка")
+                                arr.forEach(element => {
+                                    var index = arr.indexOf(element);
+                                    if (index !== -1) {
+                                        arr.splice(index, 1);
+                                    }
+                                });
+                                gen.disabled = false
+                                list.replaceChildren()
+                            }
+                            console.log(responseText)
+                            waiting = false
+                        });
                         }
-                        console.log(responseText)
+                    } else {
+                        alert("FAIL: CHANGE LIBRARY NAME")
+                        gen.disabled = false
                         waiting = false
-                    });
                     }
-                } else {
-                    alert("FAIL: CHANGE LIBRARY NAME")
-                    gen.disabled = false
-                    waiting = false
-                }
-            })
+                })
+        }
+    } else {
+        if(nameLibrary.value == '') {
+            alert("Название библиотеки не может быть пустым")
+        } else {
+            alert("Список комнат пуст")
+        }
     }
 })

@@ -90,10 +90,10 @@ def create(room, ruroom, cursor):
             idraw.text((width/2-(bbox[2]/2),height-80), ruroom, font=font, fill=(0, 0, 0))
         #сохранение
         if i == 1:
-            imgName = "result_hor/hor-" + args.library + "-" + room + ".png"
+            imgName = "result_hor/hor-" + args.library + "-" + ruroom + ".png"
             newImg.save(imgName)
         else:
-            imgName = "result_ver/vert-" + args.library + "-" + room + ".png"
+            imgName = "result_ver/vert-" + args.library + "-" + ruroom + ".png"
             newImg.save(imgName)
 
 

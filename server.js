@@ -3,16 +3,16 @@ var app = express();
 var mysql = require('mysql'); // клиент для MYSQL Server
 
 const bodyParser = require('body-parser')
-
+const PythonShell = require('python-shell').PythonShell;
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.static(__dirname + '/web'));
 
 var pool = mysql.createPool({
 	connectionLimit: 10,
-	host: '127.0.0.1',
+	host: '172.17.0.2',
 	user: 'root',
-	password: '160301',
+	password: 'root',
 	database: 'info'
 });
 
@@ -33,6 +33,36 @@ function getDriver(info, callback) {
 			if (err) throw err;
 			if (result.length > 0) {
 				callback(err, result[0].name)
+			} else {
+				callback(err, 'info')
+			}
+		})
+		con.release()
+	})
+}
+
+function delLibrary(info, callback) {
+	pool.getConnection(function(err,con) {
+		if(err) throw err;
+		con.query("DELETE FROM info WHERE name='" + info + "'", function (err, result) {
+			if (err) throw err;
+			callback(err, 'ok')
+		})
+		con.release()
+	})
+}
+
+function getList(callback) {
+	pool.getConnection(function(err,con) {
+		if(err) throw err;
+		con.query("SELECT name FROM info", function (err, result) {
+			if (err) throw err;
+			if (result.length > 0) {
+				let a = ['bgitu']
+				result.forEach(element => {
+					a.push(element.name)
+				});
+				callback(err, a)
 			} else {
 				callback(err, 'info')
 			}
@@ -85,26 +115,8 @@ app.get('/api/sendfile', (req, res) => {
 		
         res.send(file);
         console.log("sending file")
-		//console.log(req.headers)
     });
 });
-
-
-app.get('/test', (req, res) => {
-	console.log(req.body)
-})
-
-// app.get('/', (req, res) => {
-//  filePath = `${__dirname}/web/index.html`;
-//     fs.readFile(filePath, (err, file) => {
-//         if (err) {
-//             console.log(err);
-//             return res.status(500).send('Could not download file');
-//         }
-//         res.render(filePath);
-//         console.log("open")
-//     });
-// })
 
 var a = {"Ё":"YO","Й":"I","Ц":"TS","У":"U","К":"K","Е":"E","Н":"N","Г":"G","Ш":"SH","Щ":"SCH","З":"Z","Х":"H","Ъ":"'","ё":"yo","й":"i","ц":"ts","у":"u","к":"k","е":"e","н":"n","г":"g","ш":"sh","щ":"sch","з":"z","х":"h","ъ":"'","Ф":"F","Ы":"I","В":"V","А":"A","П":"P","Р":"R","О":"O","Л":"L","Д":"D","Ж":"ZH","Э":"E","ф":"f","ы":"i","в":"v","а":"a","п":"p","р":"r","о":"o","л":"l","д":"d","ж":"zh","э":"e","Я":"Ya","Ч":"CH","С":"S","М":"M","И":"I","Т":"T","Ь":"'","Б":"B","Ю":"YU","я":"ya","ч":"ch","с":"s","м":"m","и":"i","т":"t","ь":"'","б":"b","ю":"yu"};
 function transliterate(word){
@@ -114,7 +126,6 @@ function transliterate(word){
 }
 
 app.post('/generator', (req, res) => {
-	console.log(req.body)
 	failed = false
 	if(req.headers['info'] != undefined) {
 		resultArray = req.body
@@ -132,21 +143,12 @@ app.post('/generator', (req, res) => {
 			});
 			stream.end();
 		});
-		
-		const PythonShell = require('python-shell').PythonShell;
-		let options = {
-			mode: 'text',
-			args: [libraryName]
-		};
-
+	
 		PythonShell.run('main.py', {args: [libraryName]}).then(messages => {
-			console.log(messages)
-			console.log(req.headers['info'])
 			newInfo(libraryName, function (err, driverResult) {
 				if(err) throw err;
 				res.send("ok")
 			})
-			
 		})
 	} else {
 		res.send("fail")
@@ -156,35 +158,55 @@ app.post('/generator', (req, res) => {
 app.get('/api/downloadfile', (req, res) => {
 	filePath = `${__dirname}/resultzip/${req.headers['info']}_library.zip`;	
     res.sendFile(filePath, (err) => {
-		if (err) console.log(err)
+		if (err) {
+			console.log(err)
+			throw err;
+		}
 	})
     console.log("sending file")
-		//console.log(req.headers)
 })
 
 app.post('/api/occurence', (req,res) => {
 	libraryName = req.headers['info']
 	getOccurence(libraryName, function (err, driverResult) {
-		//res.json({'info': driverResult})
 		res.send(driverResult)
 	})
 })
 
+app.get('/api/getlist', (req,res) => {
+	getList(function (err, driverResult) {
+		if (driverResult == 'info') {
+			res.json(['bgitu','school10'])
+		}
+		res.json(driverResult)
+	})
+})
+
+app.post('/api/dellibrary', (req,res) => {
+	if(req.headers['info'] != undefined) {
+		delLibrary(req.headers['info'],function (err, driverResult) {
+			if(err) res.sendStatus(500)
+			PythonShell.run('del.py', {args: [req.headers['info']]}).then(messages => {
+				res.sendStatus(200)
+			})
+		})
+	}
+})
+
 app.post('/api', (req, res) => {
     let data = req.body;
-    //console.log(data)
-    console.log("CONNECTION")
-    //res.send('Data Received: ' + JSON.stringify(data['info']));
     if (JSON.stringify(data['info']) !== undefined) {
 		info = JSON.stringify(data['info']).replace(/['"]+/g, '')
 		getDriver(info, function (err, driverResult) {
-			//console.log(driverResult)
 			res.json({'info': driverResult})
 		})
     }
 })
- 
 
-app.get('/info', function (req, res) {
-	
+app.get('/', function(req, res) {
+	res.sendFile(__dirname + "/web/index.html");
+});
+
+app.get('/list', function(req, res) {
+	res.sendFile(__dirname + "/web/list/index.html");
 });
