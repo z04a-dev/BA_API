@@ -1,7 +1,5 @@
 let list = document.querySelector('#list')
 let refresh = document.querySelectorAll('button')[2]
-// list.appendChild(createli(inp.value))
-
 
 let blockedarr = ['bgitu','school10','info']
 function createli(val) {

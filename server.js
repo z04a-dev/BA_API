@@ -1,6 +1,6 @@
-var express = require('express'); // оснастка веб сервера
+var express = require('express');
 var app = express();
-var mysql = require('mysql'); // клиент для MYSQL Server
+var mysql = require('mysql');
 
 const bodyParser = require('body-parser')
 const PythonShell = require('python-shell').PythonShell;
@@ -16,15 +16,17 @@ var pool = mysql.createPool({
 	database: 'info'
 });
 
+
 let blockedarr = ['bgitu','school10','info']
 
 // сервер для http://localhost:8081/
 var server = app.listen(8081, function () {
     var host = server.address().address 
     var port = server.address().port
-
     console.log("сервер доступен по url http://%s:%s", host, port)
 });
+
+
 
 function getDriver(info, callback) {
 	pool.getConnection(function(err,con) {
@@ -102,7 +104,7 @@ function newInfo(info, callback) {
 
 const fs = require('fs');
 
-app.get('/api/sendfile', (req, res) => {
+app.get('/api/app/sendfile', (req, res) => {
     filePath = `${__dirname}/res/${req.headers['info']}.zip`;
     fs.readFile(filePath, (err, file) => {
         if (err) {
@@ -125,7 +127,7 @@ function transliterate(word){
   }).join("");
 }
 
-app.post('/generator', (req, res) => {
+app.post('/api/generator', (req, res) => {
 	failed = false
 	if(req.headers['info'] != undefined) {
 		resultArray = req.body
@@ -193,7 +195,7 @@ app.post('/api/dellibrary', (req,res) => {
 	}
 })
 
-app.post('/api', (req, res) => {
+app.post('/api/app/occurencejson', (req, res) => {
     let data = req.body;
     if (JSON.stringify(data['info']) !== undefined) {
 		info = JSON.stringify(data['info']).replace(/['"]+/g, '')
